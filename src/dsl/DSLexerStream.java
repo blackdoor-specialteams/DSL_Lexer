@@ -37,7 +37,7 @@ public class DSLexerStream{
 	public Token read() throws IOException{
 		boolean tokenFound = false;
 		Token token;
-		
+		//TODO whitespace handling
 		if(charAtHand == ' '){
 			nextChar();
 		}
