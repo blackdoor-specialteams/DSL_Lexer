@@ -5,6 +5,10 @@ package dsl;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
+
+import dsl.Token.TokenType;
 
 
 /**
@@ -14,6 +18,8 @@ import java.io.Reader;
 public class DSLexerStream{
 	
 	protected Reader source;
+	private int line, column = 0;
+	private char charAtHand = ' ';
 
 	/**
 	 * @param source - the Reader containing a character stream that represents
@@ -24,12 +30,87 @@ public class DSLexerStream{
 	}
 	
 	/**
-	 * Reads a single token. This method will block until a token is available, an I/O error occurs, or the end of the stream is reached.
+	 * Reads a single token. This method will block until a token is available, or an I/O error occurs.
 	 * @return The token read.
 	 * @throws IOException
 	 */
 	public Token read() throws IOException{
-		return null;
+		boolean tokenFound = false;
+		Token token;
+		
+		if(charAtHand == ' '){
+			nextChar();
+		}
+		if(Character.isDigit(charAtHand)){
+			token = getNumLiteral();
+		}else{
+			TokenType type;
+			String lexeme = "" + charAtHand;
+			List<TokenType> possibleTypes = new ArrayList<TokenType>();
+			
+			for(TokenType t : TokenType.values()){
+				if(charAtHand == t.getIdString().charAt(0))
+					possibleTypes.add(t);
+			}
+			int i = 0;
+			while(possibleTypes.size() > 1){
+				lexeme += nextChar();
+				i++;
+				for(TokenType t : possibleTypes){
+					if(charAtHand != t.getIdString().charAt(i))
+						possibleTypes.remove(t);
+				}
+			}
+			type = possibleTypes.get(0);
+			if(Character.isLetter(lexeme.charAt(0)))
+				while(Character.isDigit(charAtHand) || Character.isLetter(charAtHand) || charAtHand == '_'){
+					type = TokenType.ID;
+					lexeme += charAtHand;
+					nextChar();
+				}
+			token = new Token(type, line, column, lexeme);
+		}
+		
+		return token;
+	}
+	
+	/**
+	 * returns the next char in source, incrementing line and column appropriately
+	 * also saves the char to charAtHand
+	 * @return the next char in source
+	 * @throws IOException
+	 */
+	private char nextChar() throws IOException{
+		charAtHand = (char) source.read();
+		if(charAtHand == '\n'){
+			line ++;
+		}else
+			column ++;
+		return charAtHand;
+	}
+	
+	private Token getNumLiteral() throws IOException{
+		Token token;
+		String characters = "" + charAtHand;//List<Character> characters = new ArrayList<Character>();
+		TokenType type;
+		
+		//characters.add(charAtHand);
+		while(Character.isDigit(nextChar())){
+			characters += charAtHand;
+		}
+		
+		if(nextChar() == '.'){
+			type = TokenType.FLOAT;
+			characters += charAtHand;
+			while(Character.isDigit(nextChar())){
+				characters += charAtHand;
+			}
+		}else{
+			type = TokenType.INT;
+		}
+		
+		token = new Token(type, line, column, characters);
+		return token;
 	}
 	
 	/**

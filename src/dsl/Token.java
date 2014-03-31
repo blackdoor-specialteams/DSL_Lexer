@@ -10,8 +10,8 @@ package dsl;
 public class Token {
 	
 	public enum TokenType{
-		LAPREN("("), RPAREN(")"), SEMICOLON(";"), COLON(";"), COMMA(","), ADD("+"), SUBTRACT("-"), MULT("*"), MOD("%"), 
-		ASSIGN("="), RBRACE("{"), LBRACE("}"), ;
+		LAPREN("("), RPAREN(")"), SEMICOLON(";"), COLON(":"), COMMA(","), ADD("+"), SUBTRACT("-"), MULT("*"), MOD("%"), 
+		ASSIGN("="), RBRACE("{"), LBRACE("}"), INT("INT"), FLOAT("FLOAT"), ID("");
 		private String idString;
 		TokenType(String idString){
 			this.idString = idString;
