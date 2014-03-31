@@ -35,12 +35,13 @@ public class DSLexerStream{
 	 * @throws IOException
 	 */
 	public Token read() throws IOException{
-		boolean tokenFound = false;
 		Token token;
-		//TODO whitespace handling
-		if(charAtHand == ' '){
+		
+		if(charAtHand == ' ' || charAtHand == '\n' || charAtHand == '\t'){
 			nextChar();
+			return read();
 		}
+		
 		if(Character.isDigit(charAtHand)){
 			token = getNumLiteral();
 		}else{
