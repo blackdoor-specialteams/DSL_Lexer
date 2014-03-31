@@ -13,10 +13,11 @@ import java.io.Reader;
 public class DSLexerStream{
 
 	/**
-	 * @param arg0 
+	 * @param source - the Reader containing a character stream that represents
+	 * source code
 	 */
 	public DSLexerStream(Reader source) {
-		// TODO Auto-generated constructor stub
+		
 	}
 
 }
