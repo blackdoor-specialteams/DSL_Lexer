@@ -9,14 +9,18 @@ package dsl;
  */
 public class Token {
 	
-	public enum TokenType{
-		LAPREN("("), RPAREN(")"), SEMICOLON(";"), COLON(":"), COMMA(","), ADD("+"), SUBTRACT("-"), MULT("*"), MOD("%"), 
-		ASSIGN("="), RBRACE("{"), LBRACE("}"), INT("int"), FLOAT("float"), ID(" "), STRING("string");
+	public enum TokenType {
+		LAPREN("("), RPAREN(")"), SEMICOLON(";"), COLON(":"), COMMA(","), ADD(
+				"+"), SUBTRACT("-"), MULT("*"), MOD("%"), ASSIGN("="), RBRACE(
+				"{"), LBRACE("}"), INT("int"), FLOAT("float"), ID(" "), STRING(
+				"string");
 		private String idString;
-		TokenType(String idString){
+
+		TokenType(String idString) {
 			this.idString = idString;
 		}
-		public String getIdString(){
+
+		public String getIdString() {
 			return idString;
 		}
 	}

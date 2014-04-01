@@ -23,7 +23,7 @@ public class DSLexerStream{
 	public static void main(String[] args) throws IOException{
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		DSLexerStream lexer = new DSLexerStream(in);
-		for(int i = 0; i < 5;i++){
+		while(true){
 			System.out.print(">/");
 			System.out.println(lexer.read());
 		}
@@ -60,7 +60,7 @@ public class DSLexerStream{
 		}else{
 			TokenType type;
 			String lexeme = "" + charAtHand;
-			List<TokenType> possibleTypes = new ArrayList<TokenType>();
+			ArrayList<TokenType> possibleTypes = new ArrayList<TokenType>();
 			
 			for(TokenType t : TokenType.values()){
 				if(charAtHand == t.getIdString().charAt(0))
@@ -70,24 +70,43 @@ public class DSLexerStream{
 			int i = 0;
 			while(possibleTypes.size() >= 1){
 				nextChar();
-				if(Character.isLetter(charAtHand)){
-					lexeme += charAtHand;
-				}else
-					break;
+				if(!Character.isLetter(charAtHand)){
+					System.out.println("breaking");
+					break;//lexeme += charAtHand;
+				}
 						
 				i++;
-				for(TokenType t : possibleTypes){
-					if(charAtHand != t.getIdString().charAt(i))
-						possibleTypes.remove(t);
+				@SuppressWarnings("unchecked")
+				ArrayList<TokenType> stupid = (ArrayList<TokenType>) possibleTypes.clone();
+				for (TokenType t : possibleTypes) {
+					try {
+						if (charAtHand != t.getIdString().charAt(i))
+							stupid.remove(t);
+					} catch (IndexOutOfBoundsException e) {
+						stupid.remove(t);
+					}
 				}
+				possibleTypes = stupid;
 			}
-			type = possibleTypes.get(0);
+			
+			try {
+				if (lexeme.equals(possibleTypes.get(0).getIdString()))
+					type = possibleTypes.get(0);
+				else
+					type = TokenType.ID;
+			} catch (IndexOutOfBoundsException e) {
+				type = TokenType.ID;
+			}
+			
+			
+			//nextChar();
+			System.out.println(charAtHand);
 			if(Character.isLetter(lexeme.charAt(0)))
 				while(Character.isDigit(charAtHand) || Character.isLetter(charAtHand) || charAtHand == '_'){
-					type = TokenType.ID;
 					
-					nextChar();
 					lexeme += charAtHand;
+					nextChar();
+					System.out.println(charAtHand);
 				}
 			token = new Token(type, line, column, lexeme);
 		}
@@ -167,4 +186,20 @@ public class DSLexerStream{
 		return 0;
 	}
 
+	public class UnidentifiableTokenException extends Exception{
+		private int line, column;
+		private String lexeme;
+		public UnidentifiableTokenException(String error, int line, int column, String lexeme){
+			super(error);
+			this.line=line;
+			this.column = column;
+			this.lexeme = lexeme;
+		}
+		@Override
+		public String toString() {
+			return "UnidentifiableTokenException [line=" + line + ", column="
+					+ column + ", lexeme=" + lexeme + "]";
+		}
+		
+	}
 }
