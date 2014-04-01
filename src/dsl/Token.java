@@ -11,7 +11,7 @@ public class Token {
 	
 	public enum TokenType{
 		LAPREN("("), RPAREN(")"), SEMICOLON(";"), COLON(":"), COMMA(","), ADD("+"), SUBTRACT("-"), MULT("*"), MOD("%"), 
-		ASSIGN("="), RBRACE("{"), LBRACE("}"), INT("INT"), FLOAT("FLOAT"), ID("");
+		ASSIGN("="), RBRACE("{"), LBRACE("}"), INT("int"), FLOAT("float"), ID(" "), STRING("string");
 		private String idString;
 		TokenType(String idString){
 			this.idString = idString;
@@ -48,5 +48,12 @@ public class Token {
 
 	public String getTokenLexeme() {
 		return tokenLexeme;
+	}
+
+	@Override
+	public String toString() {
+		return "Token [tokenType=" + tokenType + ", tokenLine=" + tokenLine
+				+ ", tokenColumn=" + tokenColumn + ", tokenLexeme="
+				+ tokenLexeme + "]";
 	}
 }

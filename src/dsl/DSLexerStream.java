@@ -3,7 +3,9 @@
  */
 package dsl;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,17 @@ import dsl.Token.TokenType;
  *
  */
 public class DSLexerStream{
+	
+	
+	public static void main(String[] args) throws IOException{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		DSLexerStream lexer = new DSLexerStream(in);
+		for(int i = 0; i < 5;i++){
+			System.out.print(">/");
+			System.out.println(lexer.read());
+		}
+	}
+	
 	
 	protected Reader source;
 	private int line, column = 0;
@@ -53,9 +66,15 @@ public class DSLexerStream{
 				if(charAtHand == t.getIdString().charAt(0))
 					possibleTypes.add(t);
 			}
+			
 			int i = 0;
 			while(possibleTypes.size() > 1){
-				lexeme += nextChar();
+				nextChar();
+				if(Character.isLetter(charAtHand)){
+					lexeme += charAtHand;
+				}else
+					break;
+						
 				i++;
 				for(TokenType t : possibleTypes){
 					if(charAtHand != t.getIdString().charAt(i))
@@ -66,8 +85,9 @@ public class DSLexerStream{
 			if(Character.isLetter(lexeme.charAt(0)))
 				while(Character.isDigit(charAtHand) || Character.isLetter(charAtHand) || charAtHand == '_'){
 					type = TokenType.ID;
-					lexeme += charAtHand;
+					
 					nextChar();
+					lexeme += charAtHand;
 				}
 			token = new Token(type, line, column, lexeme);
 		}
