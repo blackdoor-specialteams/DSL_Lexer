@@ -68,7 +68,7 @@ public class DSLexerStream{
 			}
 			
 			int i = 0;
-			while(possibleTypes.size() > 1){
+			while(possibleTypes.size() >= 1){
 				nextChar();
 				if(Character.isLetter(charAtHand)){
 					lexeme += charAtHand;
