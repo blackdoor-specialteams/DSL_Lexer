@@ -46,7 +46,7 @@ public class Token {
 	
 	public enum TokenType{
 		LPAREN("("), RPAREN(")"), SEMICOLON(";"), COLON(":"), COMMA(","), LET_EXP("let"), PLUS_OP("+"), MINUS_OP("-"), TIMES_OP("*"),
-		ASSIGN("="), INT("int"), FLOAT("float"), ID(" "), STRING("string"), EQUALITY("=="), NOTEQ("!="), INC("++");
+		ASSIGN("="), INT(""), FLOAT(""), ID(""), STRING_VAL(""), EQUALITY("=="), NOTEQ("!="), INC("++"), ERROR("");
 		private String idString;
 		TokenType(String idString){
 			this.idString = idString;

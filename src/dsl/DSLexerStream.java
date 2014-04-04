@@ -50,45 +50,33 @@ public class DSLexerStream{
 	 * @throws IOException
 	 */
 	public Token read() throws IOException{
-		Token token;
-		
 		if(isWhiteChar(charAtHand)){
 			nextChar();
 			return read();
 		}
 		
 		if(Character.isDigit(charAtHand)){
-			token = getNumLiteralToken();
-		}else if(!Character.isLetter(charAtHand) && charAtHand != '_'){
-			token = getSymbolToken();
-		}else{
-			TokenType type;
-			String lexeme = "" + charAtHand;
-			List<TokenType> possibleTypes = getPossibleTypes(charAtHand);
-						
-			int i = 0;
-			while(possibleTypes.size() >= 1){
-				nextChar();
-				if(Character.isLetter(charAtHand)){
-					lexeme += charAtHand;
-				}else
-					break;
-				possibleTypes = refinePossibleTypes(charAtHand, i++, possibleTypes);
-			}
-			type = possibleTypes.get(0);
-			if(Character.isLetter(lexeme.charAt(0)))
-				while(Character.isDigit(charAtHand) || Character.isLetter(charAtHand) || charAtHand == '_'){
-					type = TokenType.ID;
-					
-					nextChar();
-					lexeme += charAtHand;
-				}
-			token = new Token(type, line, column, lexeme);
+			return getNumLiteralToken();
+		}if(isSymbol(charAtHand)){
+			return getSymbolToken();
+		}
+		if (charAtHand == '\"') {
+			return getStringLiteralToken();
 		}
 		
-		return token;
+		String lexeme = "" + charAtHand;
+		while (nextChar() == '_' || Character.isLetterOrDigit(charAtHand)) {
+			lexeme += charAtHand;
+		}
+
+		for (TokenType t : TokenType.values()) {
+			if (t.getIdString().equals(lexeme))
+				return new Token(t, line, column, lexeme);
+		}
+		
+		return new Token(TokenType.ID, line, column, lexeme);
 	}
-	
+
 	private static List<TokenType> refinePossibleTypes(char charAtHand, int i, List<TokenType> possibleTypes){
 		List<TokenType> stupid = new ArrayList<TokenType>(possibleTypes);
 		for (TokenType t : possibleTypes) {
@@ -105,8 +93,12 @@ public class DSLexerStream{
 	private static List<TokenType> getPossibleTypes(char firstChar){
 		List<TokenType> possibleTypes = new ArrayList<TokenType>();
 		for(TokenType t : TokenType.values()){
+			try{
 			if(firstChar == t.getIdString().charAt(0))
 				possibleTypes.add(t);
+			}catch (StringIndexOutOfBoundsException e){
+				
+			}
 		}
 		return possibleTypes;
 	}
@@ -135,7 +127,8 @@ public class DSLexerStream{
 		try{
 			return new Token(possibleTypes.get(0), line, column, lexeme);
 		}catch (IndexOutOfBoundsException e){
-			throw new LexerException(lexeme + " is not a valid token.", line, column);
+			System.err.println(new LexerException(lexeme + " is not a valid token.", line, column));
+			return new Token(TokenType.ERROR, line,column,lexeme);
 		}
 	}
 	
@@ -164,7 +157,7 @@ public class DSLexerStream{
 			characters += charAtHand;
 		}
 		
-		if(nextChar() == '.'){
+		if(charAtHand == '.'){
 			type = TokenType.FLOAT;
 			characters += charAtHand;
 			while(Character.isDigit(nextChar())){
@@ -176,6 +169,15 @@ public class DSLexerStream{
 		
 		token = new Token(type, line, column, characters);
 		return token;
+	}
+	
+	private Token getStringLiteralToken() throws IOException{
+		String string = "";
+		while(nextChar() != '\"'){
+			string += charAtHand;
+		}
+		nextChar();
+		return new Token(TokenType.STRING_VAL, line, column, string);
 	}
 	
 	/**
@@ -211,6 +213,7 @@ public class DSLexerStream{
 		return 0;
 	}
 	
+	@SuppressWarnings("serial")
 	public class LexerException extends AnalysisException{
 		private int line, column;
 		public LexerException(String error, int line, int column){
