@@ -158,13 +158,13 @@ public class DSLexerStream{
 		}
 		
 		if(charAtHand == '.'){
-			type = TokenType.FLOAT;
+			type = TokenType.FLOAT_VAL;
 			characters += charAtHand;
 			while(Character.isDigit(nextChar())){
 				characters += charAtHand;
 			}
 		}else{
-			type = TokenType.INT;
+			type = TokenType.INT_VAL;
 		}
 		
 		token = new Token(type, line, column, characters);
