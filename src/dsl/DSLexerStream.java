@@ -13,6 +13,7 @@ import java.util.List;
 import dsl.Token.TokenType;
 
 
+
 /**
  * @author nfischer3
  *
@@ -29,7 +30,8 @@ public class DSLexerStream{
 		}
 	}
 	
-	
+	public static final String SYMBOLS = "!;:,=+-*/<>()";
+	public static final String WHITECHARS = " \n\r\t";
 	protected Reader source;
 	private int line, column = 0;
 	private char charAtHand = ' ';
@@ -50,23 +52,20 @@ public class DSLexerStream{
 	public Token read() throws IOException{
 		Token token;
 		
-		if(charAtHand == ' ' || charAtHand == '\n' || charAtHand == '\t'){
+		if(isWhiteChar(charAtHand)){
 			nextChar();
 			return read();
 		}
 		
 		if(Character.isDigit(charAtHand)){
-			token = getNumLiteral();
+			token = getNumLiteralToken();
+		}else if(!Character.isLetter(charAtHand) && charAtHand != '_'){
+			token = getSymbolToken();
 		}else{
 			TokenType type;
 			String lexeme = "" + charAtHand;
-			List<TokenType> possibleTypes = new ArrayList<TokenType>();
-			
-			for(TokenType t : TokenType.values()){
-				if(charAtHand == t.getIdString().charAt(0))
-					possibleTypes.add(t);
-			}
-			
+			List<TokenType> possibleTypes = getPossibleTypes(charAtHand);
+						
 			int i = 0;
 			while(possibleTypes.size() >= 1){
 				nextChar();
@@ -74,12 +73,7 @@ public class DSLexerStream{
 					lexeme += charAtHand;
 				}else
 					break;
-						
-				i++;
-				for(TokenType t : possibleTypes){
-					if(charAtHand != t.getIdString().charAt(i))
-						possibleTypes.remove(t);
-				}
+				possibleTypes = refinePossibleTypes(charAtHand, i++, possibleTypes);
 			}
 			type = possibleTypes.get(0);
 			if(Character.isLetter(lexeme.charAt(0)))
@@ -95,6 +89,56 @@ public class DSLexerStream{
 		return token;
 	}
 	
+	private static List<TokenType> refinePossibleTypes(char charAtHand, int i, List<TokenType> possibleTypes){
+		List<TokenType> stupid = new ArrayList<TokenType>(possibleTypes);
+		for (TokenType t : possibleTypes) {
+			try {
+				if (charAtHand != t.getIdString().charAt(i))
+					stupid.remove(t);
+			} catch (IndexOutOfBoundsException e) {
+				stupid.remove(t);
+			}
+		}
+		return stupid;
+	}
+	
+	private static List<TokenType> getPossibleTypes(char firstChar){
+		List<TokenType> possibleTypes = new ArrayList<TokenType>();
+		for(TokenType t : TokenType.values()){
+			if(firstChar == t.getIdString().charAt(0))
+				possibleTypes.add(t);
+		}
+		return possibleTypes;
+	}
+	
+	private static boolean isSymbol(char c){
+		return SYMBOLS.contains("" + c);
+	}
+	
+	private static boolean isWhiteChar(char c){
+		return WHITECHARS.contains("" + c);
+	}
+	
+	private Token getSymbolToken() throws IOException{
+		String lexeme = "" + charAtHand;
+		List<TokenType> possibleTypes = getPossibleTypes(charAtHand);
+		
+		
+		while(isSymbol(nextChar())){
+			lexeme += charAtHand;
+		}
+		
+		int i = 0;
+		for(char c : lexeme.toCharArray()){
+			possibleTypes = refinePossibleTypes(c, i++, possibleTypes);
+		}
+		try{
+			return new Token(possibleTypes.get(0), line, column, lexeme);
+		}catch (IndexOutOfBoundsException e){
+			throw new LexerException(lexeme + " is not a valid token.", line, column);
+		}
+	}
+	
 	/**
 	 * returns the next char in source, incrementing line and column appropriately
 	 * also saves the char to charAtHand
@@ -103,14 +147,14 @@ public class DSLexerStream{
 	 */
 	private char nextChar() throws IOException{
 		charAtHand = (char) source.read();
-		if(charAtHand == '\n'){
+		if(charAtHand == '\n' || charAtHand == '\r'){
 			line ++;
 		}else
 			column ++;
 		return charAtHand;
 	}
 	
-	private Token getNumLiteral() throws IOException{
+	private Token getNumLiteralToken() throws IOException{
 		Token token;
 		String characters = "" + charAtHand;//List<Character> characters = new ArrayList<Character>();
 		TokenType type;
@@ -166,5 +210,20 @@ public class DSLexerStream{
 	public long skip(long n){
 		return 0;
 	}
+	
+	public class LexerException extends AnalysisException{
+		private int line, column;
+		public LexerException(String error, int line, int column){
+			super(error);
+			this.line = line;
+			this.column = column;
+		}
+		
+		public String toString(){
+			return "LexerException at " + line + ":" + column + " : " + getMessage();
+		}
+	}
+	
+	
 
 }
