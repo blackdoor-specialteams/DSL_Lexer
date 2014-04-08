@@ -20,16 +20,7 @@ import dsl.Token.TokenType;
  */
 public class DSLexerStream{
 	
-	
-	public static void main(String[] args) throws IOException{
-		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-		DSLexerStream lexer = new DSLexerStream(in);
-		for(int i = 0; i < 5;i++){
-			System.out.print(">/");
-			System.out.println(lexer.read());
-		}
-	}
-	
+	public static final char NULL = '\u0000';
 	public static final String SYMBOLS = "!;:,=+-*/<>()";
 	public static final String WHITECHARS = " \n\r\t";
 	protected Reader source;
@@ -37,8 +28,7 @@ public class DSLexerStream{
 	private char charAtHand = ' ';
 
 	/**
-	 * @param source - the Reader containing a character stream that represents
-	 * source code
+	 * @param source - the Reader containing a character stream that represents source code
 	 */
 	public DSLexerStream(Reader source) {
 		this.source = source;
@@ -50,6 +40,9 @@ public class DSLexerStream{
 	 * @throws IOException
 	 */
 	public Token read() throws IOException{
+		if(charAtHand == NULL){
+			return new Token(TokenType.EOS, line, column, null);
+		}
 		if(isWhiteChar(charAtHand)){
 			nextChar();
 			return read();
@@ -116,7 +109,7 @@ public class DSLexerStream{
 		List<TokenType> possibleTypes = getPossibleTypes(charAtHand);
 		
 		
-		while(isSymbol(nextChar())){
+		while(isSymbol(nextChar()) && charAtHand != ';'){
 			lexeme += charAtHand;
 		}
 		
@@ -139,7 +132,12 @@ public class DSLexerStream{
 	 * @throws IOException
 	 */
 	private char nextChar() throws IOException{
-		charAtHand = (char) source.read();
+		int read = source.read();
+		if(read == -1){
+			charAtHand = NULL;
+			return charAtHand;
+		}
+		charAtHand = (char) read;
 		if(charAtHand == '\n' || charAtHand == '\r'){
 			line ++;
 		}else
@@ -188,7 +186,7 @@ public class DSLexerStream{
 	 * @throws IOException
 	 */
 	public int read(Token[] b)throws IOException{
-		return 0;
+		return read(b, 0, b.length);
 	}
 	
 	/**
@@ -196,10 +194,19 @@ public class DSLexerStream{
 	 * @param b - Destination buffer
 	 * @param off - Offset at which to start storing tokens
 	 * @param len - Maximum number of tokens to read
-	 * @return The number of characters read, or -1 if the end of the stream has been reached
+	 * @return The number of characters read.
 	 * @throws IOException
 	 */
 	public int read(Token[] b, int off, int len) throws IOException{
+		for(int i = 0; i < len; i++){
+			Token read = read();
+			if(read.getTokenType() != TokenType.EOS && !read.getTokenType().equals(TokenType.ERROR)){
+				b[off+i] = read;
+			}else{
+				b[off+i] = read;
+				return i;
+			}
+		}
 		return 0;
 	}
 	
@@ -208,9 +215,18 @@ public class DSLexerStream{
 	 * Skips tokens. This method will block until some tokens are available, an I/O error occurs, or the end of the stream is reached.
 	 * @param n - the number of tokens to skip.
 	 * @return the number of tokens actually skipped.
+	 * @throws IOException 
 	 */
-	public long skip(long n){
-		return 0;
+	public long skip(long n) throws IOException{
+		TokenType read = read().getTokenType();
+		long i;
+		for(i = 0; i < n; i++){
+			if((read == TokenType.EOS) || (read == TokenType.ERROR)){
+				return i;
+			}
+			read =  read().getTokenType();
+		}
+		return i;
 	}
 	
 	@SuppressWarnings("serial")
