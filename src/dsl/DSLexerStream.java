@@ -232,6 +232,10 @@ public class DSLexerStream{
 		return i;
 	}
 	
+	public void close() throws IOException{
+		source.close();
+	}
+	
 	@SuppressWarnings("serial")
 	public class LexerException extends AnalysisException{
 		private int line, column;

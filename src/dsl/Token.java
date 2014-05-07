@@ -74,6 +74,7 @@ public class Token {
 		LPAREN("("),
 		RPAREN(")"),
 		ERROR(""),
+		WHILE("while"),
 		EOS("");
 		private String idString;
 		TokenType(String idString){
@@ -120,35 +121,3 @@ public class Token {
 				+ tokenLexeme + "]";
 	}
 }
-/*
-SEMICOLON(";"),
-COLON(":"),
-COMMA(","),
-LET_EXP("let"),
-IN_EXP("in"),
-IF_EXP("if"),
-THEN_EXP("then"),
-ELSE_EXP("else"),
-ID(""),
-ASSIGN("="),
-INT_VAL(""),
-STRING_VAL(""),
-FLOAT_VAL(""),
-PLUS_OP("+"),
-MINUS_OP("-"),
-TIMES_OP("*"),
-DIVIDE_OP("/"),
-EQUAL("=="),
-LESS_THAN("<"),
-GREATER_THAN(">"),
-LESS_THAN_EQUAL("<="),
-GREATER_THAN_EQUAL(">="),
-NOT_EQUAL("!="),
-SREAD("sread"),
-IREAD("iread"),
-FREAD("fread"),
-LPAREN("("),
-RPAREN(")"),
-ERROR(""),
-EOS(""),
-*/
